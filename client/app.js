@@ -14,7 +14,10 @@ async function init() {
             const networkId = await web3.eth.net.getId();
             
             // Get the contract ABI from the contracts folder
-            const response = await fetch('./contracts/HelloWorld.json');
+            const response = await fetch('/contracts/HelloWorld.json');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
             const contractJson = await response.json();
             
             // Check if the contract is deployed on this network
@@ -42,6 +45,7 @@ async function init() {
 
         } catch (error) {
             showStatus('Error connecting to MetaMask: ' + error.message, true);
+            console.error('Detailed error:', error);
         }
     } else {
         showStatus('Please install MetaMask to use this dApp', true);

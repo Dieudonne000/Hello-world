@@ -1,0 +1,15 @@
+{
+  "scripts": {
+    "start": "node server.js"
+  },
+  "name": "client",
+  "version": "1.0.0",
+  "main": "app.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}

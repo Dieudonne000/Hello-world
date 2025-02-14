@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hello World DApp</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Hello World DApp</h1>
+        <div class="message-container">
+            <h2>Current Message:</h2>
+            <p id="message">Loading...</p>
+        </div>
+        <div class="input-container">
+            <input type="text" id="newMessage" placeholder="Enter new message">
+            <button onclick="setNewMessage()">Update Message</button>
+        </div>
+        <div id="status" class="status"></div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.5.2/dist/web3.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html> 

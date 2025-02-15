@@ -10,11 +10,9 @@ async function init() {
             
             web3 = new Web3(window.ethereum);
             
-            // Check if we're connected to Ganache
+            // Check if we're connected to the right network
             const networkId = await web3.eth.net.getId();
-            if (networkId !== 5777 && networkId !== 1337) { // Both are valid Ganache network IDs
-                throw new Error('Please connect MetaMask to Ganache network');
-            }
+            console.log('Connected to network:', networkId);
             
             // Get the contract ABI from the contracts folder
             const response = await fetch('/contracts/HelloWorld.json');
@@ -25,16 +23,21 @@ async function init() {
             
             // Check if the contract is deployed on this network
             if (!contractJson.networks[networkId]) {
-                throw new Error('Contract not deployed on this network. Please run truffle migrate');
+                throw new Error('Please make sure you are connected to the correct network');
             }
             
             // Get the contract address from the deployed network
             const contractAddress = contractJson.networks[networkId].address;
+            console.log('Contract address:', contractAddress);
             
             contract = new web3.eth.Contract(
                 contractJson.abi,
                 contractAddress
             );
+
+            // Verify contract is accessible
+            const accounts = await web3.eth.getAccounts();
+            console.log('Connected account:', accounts[0]);
 
             // Load the initial message
             await refreshMessage();
@@ -42,11 +45,6 @@ async function init() {
             // Setup event listeners for MetaMask account changes
             window.ethereum.on('accountsChanged', function (accounts) {
                 refreshMessage();
-            });
-
-            // Setup network change listener
-            window.ethereum.on('chainChanged', function(networkId) {
-                window.location.reload();
             });
 
             showStatus('Connected to MetaMask successfully!', false);
@@ -62,10 +60,19 @@ async function init() {
 
 async function refreshMessage() {
     try {
-        const message = await contract.methods.getMessage().call();
+        const accounts = await web3.eth.getAccounts();
+        console.log('Fetching message using account:', accounts[0]);
+        
+        if (!contract || !contract.methods) {
+            throw new Error('Contract not properly initialized');
+        }
+        
+        const message = await contract.methods.getMessage().call({ from: accounts[0] });
+        console.log('Retrieved message:', message);
         document.getElementById('message').innerText = message;
     } catch (error) {
         showStatus('Error fetching message: ' + error.message, true);
+        console.error('Detailed error:', error);
     }
 }
 

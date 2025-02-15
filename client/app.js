@@ -28,8 +28,9 @@ async function init() {
             }
             const contractJson = await response.json();
             console.log('Contract JSON loaded:', {
-                abi: contractJson.abi ? 'Present' : 'Missing',
-                networks: Object.keys(contractJson.networks || {})
+                abi: contractJson.abi,
+                networks: Object.keys(contractJson.networks || {}),
+                contractAddress: contractJson.networks[networkId]?.address
             });
             
             // Check if the contract is deployed on this network
@@ -92,11 +93,28 @@ async function refreshMessage() {
             throw new Error('Contract not properly initialized');
         }
         
+        if (!contract.methods.getMessage) {
+            console.error('getMessage method not found on contract');
+            throw new Error('Contract method getMessage not found');
+        }
+        
         console.log('Calling getMessage...');
-        const message = await contract.methods.getMessage().call({ from: accounts[0] });
-        console.log('Retrieved message:', message);
-        document.getElementById('message').innerText = message;
-        console.log('Message updated in DOM');
+        try {
+            const message = await contract.methods.getMessage().call({ 
+                from: accounts[0],
+                gas: 100000
+            });
+            console.log('Retrieved message:', message);
+            document.getElementById('message').innerText = message;
+            console.log('Message updated in DOM');
+        } catch (callError) {
+            console.error('Error calling getMessage:', {
+                error: callError,
+                contractAddress: contract.options.address,
+                from: accounts[0]
+            });
+            throw callError;
+        }
     } catch (error) {
         console.error('Error in refreshMessage:', error);
         showStatus('Error fetching message: ' + error.message, true);

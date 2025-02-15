@@ -17,58 +17,62 @@ async function checkNetwork(networkId) {
 }
 
 async function init() {
-    console.log('Starting initialization...');
-    try {
-        // Check if MetaMask is installed
-        if (typeof window.ethereum === 'undefined') {
-            throw new Error('Please install MetaMask to use this dApp');
+    // Check if MetaMask is installed
+    if (typeof window.ethereum !== 'undefined') {
+        try {
+            // Request account access
+            await window.ethereum.request({ method: 'eth_requestAccounts' });
+            
+            web3 = new Web3(window.ethereum);
+            
+            // Check if we're connected to Ganache
+            const networkId = await web3.eth.net.getId();
+            if (networkId !== 5777 && networkId !== 1337) { // Both are valid Ganache network IDs
+                throw new Error('Please connect MetaMask to Ganache network');
+            }
+            
+            // Get the contract ABI from the contracts folder
+            const response = await fetch('/contracts/HelloWorld.json');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const contractJson = await response.json();
+            
+            // Check if the contract is deployed on this network
+            if (!contractJson.networks[networkId]) {
+                throw new Error('Contract not deployed on this network. Please run truffle migrate');
+            }
+            
+            // Get the contract address from the deployed network
+            const contractAddress = contractJson.networks[networkId].address;
+            
+            contract = new web3.eth.Contract(
+                contractJson.abi,
+                contractAddress
+            );
+
+            // Load the initial message
+            await refreshMessage();
+            
+            // Setup event listeners for MetaMask account changes
+            window.ethereum.on('accountsChanged', function (accounts) {
+                refreshMessage();
+            });
+
+            // Setup network change listener
+            window.ethereum.on('chainChanged', function(networkId) {
+                window.location.reload();
+            });
+
+            showStatus('Connected to MetaMask successfully!', false);
+
+        } catch (error) {
+            showStatus('Error connecting to MetaMask: ' + error.message, true);
+            console.error('Detailed error:', error);
         }
-
-        // Request account access
-        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-        console.log('Connected accounts:', accounts);
-
-        // Initialize Web3
-        web3 = new Web3(window.ethereum);
-        await checkWeb3Version();
-
-        // Check network
-        const networkId = await web3.eth.net.getId();
-        await checkNetwork(networkId);
-        
-        // Load contract
-        const contractJson = await loadContractJson();
-        contract = await initializeContract(contractJson, networkId);
-
-        // Setup event listeners
-        setupEventListeners();
-
-        // Load initial message
-        await refreshMessage();
-
-        showStatus('Connected to MetaMask successfully!', false);
-    } catch (error) {
-        handleError('Initialization error', error);
+    } else {
+        showStatus('Please install MetaMask to use this dApp', true);
     }
-}
-
-async function loadContractJson() {
-    const response = await fetch('/contracts/HelloWorld.json');
-    if (!response.ok) {
-        throw new Error(`Failed to load contract JSON: ${response.status}`);
-    }
-    return response.json();
-}
-
-async function initializeContract(contractJson, networkId) {
-    if (!contractJson.networks[networkId]) {
-        throw new Error('Contract not deployed on this network');
-    }
-
-    const contractAddress = contractJson.networks[networkId].address;
-    console.log('Contract address:', contractAddress);
-
-    return new web3.eth.Contract(contractJson.abi, contractAddress);
 }
 
 async function refreshMessage() {

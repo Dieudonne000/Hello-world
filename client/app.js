@@ -10,8 +10,11 @@ async function init() {
             
             web3 = new Web3(window.ethereum);
             
-            // Check if we're connected to the right network
+            // Check if we're connected to Ganache
             const networkId = await web3.eth.net.getId();
+            if (networkId !== 5777 && networkId !== 1337) { // Both are valid Ganache network IDs
+                throw new Error('Please connect MetaMask to Ganache network');
+            }
             
             // Get the contract ABI from the contracts folder
             const response = await fetch('/contracts/HelloWorld.json');
@@ -22,7 +25,7 @@ async function init() {
             
             // Check if the contract is deployed on this network
             if (!contractJson.networks[networkId]) {
-                throw new Error('Please make sure you are connected to the correct network');
+                throw new Error('Contract not deployed on this network. Please run truffle migrate');
             }
             
             // Get the contract address from the deployed network
@@ -39,6 +42,11 @@ async function init() {
             // Setup event listeners for MetaMask account changes
             window.ethereum.on('accountsChanged', function (accounts) {
                 refreshMessage();
+            });
+
+            // Setup network change listener
+            window.ethereum.on('chainChanged', function(networkId) {
+                window.location.reload();
             });
 
             showStatus('Connected to MetaMask successfully!', false);

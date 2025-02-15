@@ -103,18 +103,15 @@ async function setNewMessage() {
         validateContract();
         
         showStatus('Transaction pending...');
-        
-        // Listen for the event
-        contract.once('MessageUpdated', {}, (error, event) => {
-            if (!error) {
-                showStatus('Message updated successfully!', false);
-            }
-        });
 
-        await contract.methods.setMessage(newMessage).send({ 
+        const result = await contract.methods.setMessage(newMessage).send({ 
             from: accounts[0],
             gas: CONFIG.gasLimit.write
         });
+
+        if (result.events.MessageUpdated) {
+            showStatus('Message updated successfully!', false);
+        }
 
         await refreshMessage();
         document.getElementById('newMessage').value = '';

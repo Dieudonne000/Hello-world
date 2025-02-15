@@ -1,0 +1,20 @@
+{
+  "name": "hello-world-dapp",
+  "version": "1.0.0",
+  "description": "A simple Ethereum DApp",
+  "scripts": {
+    "postinstall": "cd client && npm install",
+    "compile": "truffle compile",
+    "migrate": "truffle migrate --reset",
+    "copy-contract": "mkdir -p client/contracts && cp -r build/contracts/HelloWorld.json client/contracts/",
+    "setup": "npm install && npm run compile && npm run migrate && npm run copy-contract",
+    "start": "cd client && npm start"
+  },
+  "dependencies": {
+    "@truffle/contract": "^4.6.0",
+    "truffle": "^5.11.5"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+} 

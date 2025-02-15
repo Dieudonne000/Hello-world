@@ -1,0 +1,19 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Build files
+build/
+
+# Environment files
+.env
+
+# Contract artifacts in client
+client/contracts/
+
+# IDE files
+.vscode/
+.idea/
+
+# OS files
+.DS_Store 

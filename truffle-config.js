@@ -60,8 +60,10 @@ module.exports = {
   networks: {
     development: {
       host: "127.0.0.1",
-      port: 7545,  // This is the default Ganache GUI port
-      network_id: "*" // Match any network id
+      port: 7545,
+      network_id: "*",
+      gas: 6721975,  // Explicit gas limit
+      gasPrice: 20000000000  // 20 gwei
     },
     //
     // An additional network, but with some advanced options…
@@ -100,12 +102,13 @@ module.exports = {
   // Configure your compilers
   compilers: {
     solc: {
-      version: "0.8.19",  // Updated version
+      version: "0.8.19",
       settings: {
         optimizer: {
           enabled: true,
           runs: 200
-        }
+        },
+        evmVersion: "london"  // Explicit EVM version
       }
     }
   },
